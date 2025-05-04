@@ -23,7 +23,7 @@ np.random.seed(42)
 def load_data():
     train = pd.read_csv("https://raw.githubusercontent.com/madhav481010/Inventory-Demand-Forecasting/main/train.csv")
     test = pd.read_csv("https://raw.githubusercontent.com/madhav481010/Inventory-Demand-Forecasting/main/test.csv")
-    stores = pd.read_csv("https://raw.githubusercontent.com/madhav481010/Inventory-Demand-Forecastings/main/stores.csv")
+    stores = pd.read_csv("https://raw.githubusercontent.com/madhav481010/Inventory-Demand-Forecasting/main/stores.csv")
     features = pd.read_csv("https://raw.githubusercontent.com/madhav481010/Inventory-Demand-Forecasting/main/features.csv")
 
     train = pd.merge(train, features, on=['Store', 'Date'], how='left')
