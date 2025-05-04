@@ -24,10 +24,10 @@ np.random.seed(42)
 
 ## Step 1: Data Loading and Exploration
 def load_data():
-    train = pd.read_csv('/content/train.csv')
-    test = pd.read_csv('/content/test.csv')
-    stores = pd.read_csv('/content/stores.csv')
-    features = pd.read_csv('/content/features.csv')
+    train = pd.read_csv("https://raw.githubusercontent.com/madhav481010/Inventory-Demand-Forecasting/main/train.csv", names=columns, header=0)
+    test = pd.read_csv("https://raw.githubusercontent.com/madhav481010/Inventory-Demand-Forecasting/main/test.csv", names=columns, header=0)
+    stores = pd.read_csv("https://raw.githubusercontent.com/madhav481010/Inventory-Demand-Forecastings/main/stores.csv", names=columns, header=0)
+    features = pd.read_csv("https://raw.githubusercontent.com/madhav481010/Inventory-Demand-Forecasting/main/features.csv", names=columns, header=0)
 
     train = pd.merge(train, features, on=['Store', 'Date'], how='left')
     train = pd.merge(train, stores, on=['Store'], how='left')
@@ -148,88 +148,16 @@ for name, model in models.items():
     }
 
 
-## Step 5: Time Series Models (ARIMA and Prophet)
 
-def prepare_time_series_data(df, store=1, dept=1):
-    ts_df = df[(df['Store'] == store) & (df['Dept'] == dept)]
-    ts_df = ts_df[['Date', 'Weekly_Sales']].sort_values('Date')
-    ts_df = ts_df.set_index('Date')
-    return ts_df
-
-print("\nTraining time series models on sample data...")
-ts_data = prepare_time_series_data(train_df)
-
-print("\nTraining ARIMA...")
-arima_model = ARIMA(ts_data, order=(5,1,0))
-arima_fit = arima_model.fit()
-arima_pred = arima_fit.forecast(steps=12)  # Forecast next 12 weeks
-
-print("\nTraining Prophet...")
-prophet_df = ts_data.reset_index()
-prophet_df.columns = ['ds', 'y']
-prophet_model = Prophet(seasonality_mode='multiplicative')
-prophet_model.fit(prophet_df)
-future = prophet_model.make_future_dataframe(periods=12, freq='W')
-prophet_forecast = prophet_model.predict(future)
-
-ts_results = {
-    'ARIMA': {
-        'predictions': arima_pred,
-        'model': arima_fit
-    },
-    'Prophet': {
-        'forecast': prophet_forecast,
-        'model': prophet_model
-    }
-}
-
-
-
-## Step 6: Model Comparison and Visualization
+## Step 5: Model Comparison and Visualization
 print("\nModel Comparison:")
 print("{:<20} {:<10} {:<10} {:<10}".format('Model', 'MAE', 'RMSE', 'R2'))
 for name, metrics in results.items():
     print("{:<20} {:<10.2f} {:<10.2f} {:<10.2f}".format(
         name, metrics['MAE'], metrics['RMSE'], metrics['R2']))
 
-def plot_feature_importance(model, model_name):
-    if hasattr(model.named_steps['regressor'], 'feature_importances_'):
-        cat_encoder = model.named_steps['preprocessor'].named_transformers_['cat']
-        cat_features = cat_encoder.get_feature_names_out(categorical_features)
-        all_features = numerical_features + list(cat_features)
 
-        importances = model.named_steps['regressor'].feature_importances_
-
-        feat_imp = pd.DataFrame({'Feature': all_features, 'Importance': importances})
-        feat_imp = feat_imp.sort_values('Importance', ascending=False).head(20)
-
-        plt.figure(figsize=(10, 6))
-        sns.barplot(x='Importance', y='Feature', data=feat_imp)
-        plt.title(f'Feature Importance - {model_name}')
-        plt.tight_layout()
-        plt.show()
-
-for name in ['XGBoost', 'LightGBM']:
-    plot_feature_importance(results[name]['model'], name)
-
-plt.figure(figsize=(12, 6))
-plt.plot(ts_data.index, ts_data['Weekly_Sales'], label='Actual')
-plt.plot(arima_pred.index, arima_pred, label='ARIMA Forecast')
-plt.plot(prophet_forecast['ds'], prophet_forecast['yhat'], label='Prophet Forecast')
-plt.fill_between(prophet_forecast['ds'],
-                 prophet_forecast['yhat_lower'],
-                 prophet_forecast['yhat_upper'],
-                 alpha=0.2)
-plt.title('Time Series Forecast Comparison')
-plt.xlabel('Date')
-plt.ylabel('Weekly Sales')
-plt.legend()
-plt.tight_layout()
-plt.show()
-
-
-
-## Step 7: Final Model Selection and Prediction
+## Step 6: Final Model Selection and Prediction
 
 best_model_name = min(results.items(), key=lambda x: x[1]['RMSE'])[0]
 best_model = results[best_model_name]['model']
