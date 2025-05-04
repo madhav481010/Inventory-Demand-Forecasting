@@ -1,4 +1,3 @@
-from prophet import Prophet
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -14,8 +13,6 @@ from lightgbm import LGBMRegressor
 from sklearn.svm import SVR
 from sklearn.linear_model import LinearRegression
 from sklearn.neural_network import MLPRegressor
-from statsmodels.tsa.arima.model import ARIMA
-from prophet import Prophet
 import warnings
 warnings.filterwarnings('ignore')
 
